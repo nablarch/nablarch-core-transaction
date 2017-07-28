@@ -49,7 +49,6 @@ test {
       '-XX:-UseSplitVerifier'
   )
 
-  ignoreFailures = true
 
 }
 
