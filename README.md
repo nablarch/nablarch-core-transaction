@@ -1,10 +1,5 @@
 # nablarch-core-transaction 
 
-| master | develop |
-|:-----------|:------------|
-|[![Build Status](https://travis-ci.org/nablarch/nablarch-core-transaction.svg?branch=master)](https://travis-ci.org/nablarch/nablarch-core-transaction)|[![Build Status](https://travis-ci.org/nablarch/nablarch-core-transaction.svg?branch=develop)](https://travis-ci.org/nablarch/nablarch-core-transaction)|
-
-
 ## 依存ライブラリ
 
 本モジュールのコンパイルまたはテストには、下記ライブラリを手動でローカルリポジトリへインストールする必要があります。
