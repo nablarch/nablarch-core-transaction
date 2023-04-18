@@ -1,35 +1,35 @@
 package nablarch.core.transaction;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
-
-import java.util.Map;
-
+import nablarch.test.support.reflection.ReflectionUtil;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import mockit.Deencapsulation;
-import mockit.Mocked;
+import java.util.Map;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
 
 
 public class TransactionContextTest {
 
-    @Mocked Transaction mockTransaction1;
+    Transaction mockTransaction1 = mock(Transaction.class);
 
-    @Mocked Transaction mockTransaction2;
+    Transaction mockTransaction2 = mock(Transaction.class);
 
     @Before
     public void setUp() throws Exception {
-        final ThreadLocal<Map<String, Transaction>> transaction = Deencapsulation.getField(TransactionContext.class, "transaction");
+        final ThreadLocal<Map<String, Transaction>> transaction = ReflectionUtil.getFieldValue(TransactionContext.class, "transaction");
         transaction.remove();
         TransactionContext.removeTransaction();
     }
 
     @After
     public void tearDown() throws Exception {
-        final ThreadLocal<Map<String, Transaction>> transaction = Deencapsulation.getField(TransactionContext.class, "transaction");
+        final ThreadLocal<Map<String, Transaction>> transaction = ReflectionUtil.getFieldValue(TransactionContext.class, "transaction");
         transaction.remove();
         TransactionContext.removeTransaction();
     }

@@ -1,31 +1,28 @@
 package nablarch.common.handler;
 
-import static org.hamcrest.CoreMatchers.*;
-
 import nablarch.core.transaction.Transaction;
 import nablarch.core.transaction.TransactionFactory;
 import nablarch.fw.ExecutionContext;
-
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import mockit.Expectations;
-import mockit.Mocked;
-import mockit.Verifications;
+import static org.hamcrest.CoreMatchers.is;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class TransactionManagementHandlerTest {
 
     private TransactionManagementHandler target = new TransactionManagementHandler();
     
-    @Mocked
-    private TransactionFactory transactionFactory;
+    private final TransactionFactory transactionFactory = mock(TransactionFactory.class);
 
-    @Mocked
-    private Transaction transaction;
+    private final Transaction transaction = mock(Transaction.class);
 
-    @Mocked
-    private ExecutionContext context;
+    private final ExecutionContext context = mock(ExecutionContext.class);
 
     @Before
     public void setup() {
@@ -38,83 +35,55 @@ public class TransactionManagementHandlerTest {
     public void test() {
         {
             // 正常系
-            new Expectations() {{
-                transactionFactory.getTransaction("tran");
-                result = transaction;
-                context.isProcessSucceeded();
-                result = true;
-            }};
+            when(transactionFactory.getTransaction("tran")).thenReturn(transaction);
+            when(context.isProcessSucceeded()).thenReturn(true);
             
             Assert.assertThat(target.handleInbound(context)
                                     .isSuccess(), is(true));
 
-            new Verifications() {{
-                transactionFactory.getTransaction("tran");
-                times = 1;
-                
-                transaction.begin();
-                times = 1;
-            }};            
+            verify(transactionFactory).getTransaction("tran");
+            verify(transaction).begin();
 
             Assert.assertThat(target.handleOutbound(context)
                                     .isSuccess(), is(true));
             
-            new Verifications() {{
-                transaction.commit();
-                times = 1;
-                transaction.rollback();
-                times = 0;
-            }};            
-            
+            verify(transaction).commit();
+            verify(transaction, never()).rollback();
         }
         {
+            reset(transactionFactory);
+            reset(context);
+            reset(transaction);
+            
             // 異常系
-            new Expectations() {{
-                transactionFactory.getTransaction("tran");
-                result = transaction;
-                context.isProcessSucceeded();
-                result = false;
-            }};
+            when(transactionFactory.getTransaction("tran")).thenReturn(transaction);
+            when(context.isProcessSucceeded()).thenReturn(false);
             
             Assert.assertThat(target.handleInbound(context)
                                     .isSuccess(), is(true));
 
-            new Verifications() {{
-                transactionFactory.getTransaction("tran");
-                times = 1;
-                
-                transaction.begin();
-                times = 1;
-            }};            
+            verify(transactionFactory).getTransaction("tran");
+            verify(transaction).begin();
 
             Assert.assertThat(target.handleOutbound(context)
                                     .isSuccess(), is(true));
-            
-            new Verifications() {{
-                transaction.commit();
-                times = 0;
-                transaction.rollback();
-                times = 1;
-            }};            
-            
+
+            verify(transaction, never()).commit();
+            verify(transaction).rollback();
         }
         {
-            new Expectations() {{
-                transactionFactory.getTransaction("tran");
-                result = transaction;
-                minTimes = 0;
-            }};
+            reset(transactionFactory);
+            reset(context);
+            reset(transaction);
+            
+            when(transactionFactory.getTransaction("tran")).thenReturn(transaction);
 
             // トランザクション開始前に Outbound が呼ばれた場合
             Assert.assertThat(target.handleOutbound(context)
                                     .isSuccess(), is(true));
-            
-            new Verifications() {{
-                transaction.commit();
-                times = 0;
-                transaction.rollback();
-                times = 0;
-            }};            
+
+            verify(transaction, never()).commit();
+            verify(transaction, never()).rollback();
         }
     }
 
