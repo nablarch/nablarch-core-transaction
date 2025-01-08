@@ -183,7 +183,12 @@ implements Handler<Object, Object>, InboundHandleable, OutboundHandleable {
     public Result handleInbound(ExecutionContext context) {
         final Transaction transaction = transactionFactory.getTransaction(transactionName);
         TransactionContext.setTransaction(transactionName, transaction);
-        transaction.begin();
+        try {
+            transaction.begin();
+        } catch (RuntimeException e) {
+            TransactionContext.removeTransaction(transactionName);
+            throw e;
+        }
         return new Result.Success();
     }
 
